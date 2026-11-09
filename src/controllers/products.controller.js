@@ -81,7 +81,7 @@ export async function createProduct(req, res) {
   });
 
   res.status(201).json({
-    message: `Producto con ID ${newProduct.id} creado exitosamente`,  // UNDEFINED
+    message: `Producto creado exitosamente`,  // UNDEFINED
     data: newProduct
   });
 };

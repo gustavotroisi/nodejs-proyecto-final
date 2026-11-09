@@ -30,8 +30,9 @@ export const createProductService = async (productData) => {
     stock: productData.stock,
     price: productData.price,
   };
-  saveProduct(newProduct);
-  return newProduct;
+  const savedProduct = await saveProduct(newProduct);
+  console.log("Producto creado:", savedProduct);
+  return savedProduct;
 };
 
 export const deleteProductService = async (id) => {

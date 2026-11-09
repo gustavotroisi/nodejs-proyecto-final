@@ -39,6 +39,7 @@ export const getProductById = async (idDocumento) => {
 export const saveProduct = async (product) => {
   try {
     const docRef = await addDoc(collection(db, "products"), product);
+    console.log("Producto guardado con ID:", docRef.id);
     return { id: docRef.id, ...product };
   } catch (error) {
     console.error("Error al guardar el producto:", error);
