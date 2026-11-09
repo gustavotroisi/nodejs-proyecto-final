@@ -19,7 +19,7 @@ export const getProducts = async () => {
     console.error(`Error al obtener colección products:`, error);
     throw error;
   }
-};
+}
 
 export const getProductById = async (idDocumento) => {
   try {
@@ -34,12 +34,25 @@ export const getProductById = async (idDocumento) => {
     console.error(`Error al obtener documento con ID ${idDocumento}:`, error);
     throw error;
   }
-};
+}
 
 export const saveProduct = async (product) => {
-  await addDoc(productsCollection, product);
-};
+  try {
+    const docRef = await addDoc(collection(db, "products"), product);
+    return { id: docRef.id, ...product };
+  } catch (error) {
+    console.error("Error al guardar el producto:", error);
+    throw error;
+  }
+}
 
 export const deleteProduct = async (id) => {
-  await deleteDoc(doc(productsCollection, id));
-};
+  try {
+    const docRef = doc(db, "products", id);
+    await deleteDoc(docRef);
+    return { message: `Producto con ID ${id} eliminado correctamente` };
+  } catch (error) {
+    console.error(`Error al eliminar el producto con ID ${id}:`, error);
+    throw error;
+  }
+}

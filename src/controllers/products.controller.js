@@ -59,9 +59,11 @@ export async function getProductById(req, res) {
   }
 }
 
-////pasar a export async function
-export const createProduct = async (req, res) => {
-  console.log(req);
+
+export async function createProduct(req, res) {
+
+  // const body = req.body;
+  //console.log(body);
 
   const { category, name, stock, price } = req.body;
 
