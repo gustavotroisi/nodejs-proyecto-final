@@ -1,7 +1,10 @@
 import express from "express";
+import cors from "cors";
 
 const app = express();
 const PORT = 3000;
+
+app.use(cors());
 
 app.use((req, res, next) => {
   console.log(`Recibido ${req.method}`);
