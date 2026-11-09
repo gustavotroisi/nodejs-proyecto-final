@@ -35,6 +35,14 @@ export const createProductService = async (productData) => {
 };
 
 export const deleteProductService = async (id) => {
+ 
+
+  //revisa si existe el producto antes de eliminarlo
+  const productToRemove = await getProductById(id);
+  if (!productToRemove) {
+    throw new Error(`Producto con ID ${id} no encontrado`);
+  }
+  
   const removedProduct = await deleteProduct(id);
   return removedProduct;
 };

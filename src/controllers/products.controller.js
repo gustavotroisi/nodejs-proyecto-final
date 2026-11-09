@@ -80,5 +80,19 @@ export async function createProduct(req, res) {
     price,
   });
 
-  res.status(201).json(newProduct);
+  res.status(201).json({
+    message: `Producto con ID ${newProduct.id} creado exitosamente`,  // UNDEFINED
+    data: newProduct
+  });
 };
+
+
+export async function deleteProduct(req, res) {
+  const id = req.params.id;
+  try {
+    const result = await deleteProductService(id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Error: "+ error.message });
+  }
+}
