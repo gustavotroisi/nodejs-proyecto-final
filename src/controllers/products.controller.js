@@ -6,19 +6,17 @@ import {
 } from "../services/products.service.js";
 
 export async function getAllProducts(req, res) {
-  //res.status(200).json(products);
   const category = req.query.category;
   try {
-    //res.status(200).json(productsService.getAllProductsService());
     const products = await getAllProductsService(category);
     if (products.length > 0) {
       res.send({
-        message: "Productos encontrados",
+        message: `${products.length} productos encontrados`,
         data: products,
       });
     } else {
       res.status(404).send({
-        message: "Produto(s) no encontrado(s)",
+        message: "No se encontraron productos",
       });
     }
   } catch (error) {
@@ -31,11 +29,10 @@ export async function getAllProducts(req, res) {
 
 export async function getProductById(req, res) {
   const id = req.params.id;
-
   if (id) {
     try {
       const product = await getProductByIdService(id);
-
+console.log("Producto encontrado:", product);
       if (product) {
         res.status(200).json({
           message: "Producto encontrado",
@@ -47,6 +44,7 @@ export async function getProductById(req, res) {
         });
       }
     } catch (error) {
+      console.log("ERROR INTERNO ", error);
       res.status(404).json({
         message: "Error al obtener el producto",
       });
@@ -62,36 +60,69 @@ export async function getProductById(req, res) {
 
 export async function createProduct(req, res) {
 
-  // const body = req.body;
-  //console.log(body);
+  const product = req.body;
+  
+  if (!product) { 
+      return res.status(400).json({
+      message: "Falta enviar los datos del producto",
+    });
+  }
 
   const { category, name, stock, price } = req.body;
 
   if (!category || !name || !stock || !price) {
     return res.status(400).json({
-      message: "Error al obtener los datos del producto",
+      message: "Faltan datos obligatorios del producto",
     });
   }
 
-  const newProduct = await createProductService({
-    category,
-    name,
-    stock,
-    price,
-  });
+  
+  try {
 
-  res.status(201).json({
-    message: `Producto creado exitosamente`,  // UNDEFINED
-    data: newProduct
-  });
+    const newProduct = await createProductService({
+      category,
+      name,
+      stock,
+      price,
+    });
+
+    res.status(201).json({
+      message: `Producto creado exitosamente`,  
+      data: newProduct
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al crear el producto",
+    });
+  }
 };
 
 
 export async function deleteProduct(req, res) {
+  
   const id = req.params.id;
+  
+  if (!id) {
+    return res.status(400).json({
+      message: "Falta enviar el ID del producto",
+    });
+  }
+
   try {
     const result = await deleteProductService(id);
-    res.status(200).json(result);
+    
+    if(result){
+        res.send({
+            message: "Producto Eliminado",
+            data: id
+        })
+    }else{
+        res.status(404).send({
+            message: "Producto no encontrado"
+        })
+    }
+    
   } catch (error) {
     res.status(500).json({ message: "Error: "+ error.message });
   }

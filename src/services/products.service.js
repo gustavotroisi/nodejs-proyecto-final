@@ -22,9 +22,10 @@ export const getProductByIdService = async (id) => {
   return product;
 };
 
+
 export const createProductService = async (productData) => {
+  //TODO: controlar si los campos son del tipo correcto
   const newProduct = {
-    //id: products.length + 1,
     category: productData.category,
     name: productData.name,
     stock: productData.stock,
@@ -37,8 +38,7 @@ export const createProductService = async (productData) => {
 
 export const deleteProductService = async (id) => {
  
-
-  //revisa si existe el producto antes de eliminarlo
+   //revisa si existe el producto antes de eliminarlo
   const productToRemove = await getProductById(id);
   if (!productToRemove) {
     throw new Error(`Producto con ID ${id} no encontrado`);

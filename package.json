@@ -9,6 +9,7 @@
     "dev": "nodemon index.js"
   },
   "keywords": [],
+  "author": "Gustavo Troisi",
   "type": "module",
   "dependencies": {
     "body-parser": "^2.4.0",

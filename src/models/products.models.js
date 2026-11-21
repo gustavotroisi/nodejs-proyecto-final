@@ -4,10 +4,7 @@ import {
   doc,
   getDoc,
   addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
+  deleteDoc
 } from "firebase/firestore";
 import { db } from "../data/data.js";
 
@@ -51,7 +48,7 @@ export const deleteProduct = async (id) => {
   try {
     const docRef = doc(db, "products", id);
     await deleteDoc(docRef);
-    return { message: `Producto con ID ${id} eliminado correctamente` };
+    return docRef;
   } catch (error) {
     console.error(`Error al eliminar el producto con ID ${id}:`, error);
     throw error;
