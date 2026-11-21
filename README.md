@@ -1,69 +1,105 @@
-# API de Productos
+﻿# API de Productos
 
 ## Descripción
 
-Esta API expone un conjunto de endpoints que permiten consultar, crear y administrar productos almacenados en una base de datos Firebase Firestore. Los endpoints están disponibles en el prefijo `/api`.
+Esta API permite consultar y administrar productos. Los datos de productos se almacenan en Firebase Firestore. Las rutas de productos usan el prefijo `/api`; la autenticación usa el prefijo `/auth`.
 
 ## Endpoints
 
-| Método | Ruta                   | Descripción                                                                                 | Parámetros            | Cuerpo                                        | Respuesta                                    | Código de estado              |
-| ------ | ---------------------- | ------------------------------------------------------------------------------------------- | --------------------- | --------------------------------------------- | -------------------------------------------- | ----------------------------- |
-| `GET`  | `/api/products`        | Obtiene todos los productos. Se puede filtrar por categoría utilizando la query `category`. | `category` (opcional) | N/A                                           | `message` y `data` con la lista de productos | `200` o `404` (no encontrado) |
-| `GET`  | `/api/products/:id`    | Obtiene un producto por su ID.                                                              | `id` (en la ruta)     | N/A                                           | `message` y `data` con el producto           | `200` o `404`                 |
-| `POST` | `/api/products/create` | Crea un nuevo producto.                                                                     | N/A                   | JSON con `category`, `name`, `stock`, `price` | `201` con el objeto creado                   |
+| Método | Ruta | Descripción | Parámetros | Cuerpo | Respuesta y estados |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/api/products` | Obtiene todos los productos; puede filtrar por categoría. | `category` (query, opcional) | No aplica | `200`: `message` y `data`; `404`: no se encontraron productos; `500`: error interno. |
+| `GET` | `/api/products/:id` | Obtiene un producto por ID. | `id` (ruta) | No aplica | `200`: `message` y `data`; `404`: producto no encontrado. |
+| `POST` | `/api/products/create` | Crea un producto. Requiere autenticación. | No aplica | JSON con `category`, `name`, `stock`, `price` | `201`: `message` y `data`; `400`: datos faltantes; `401`/`403`: token ausente o inválido; `500`: error al crear. |
+| `DELETE` | `/api/products/:id` | Elimina un producto por ID. Requiere autenticación. | `id` (ruta) | No aplica | `200`: `message` y `data` con el ID; `404`: producto no encontrado; `401`/`403`: token ausente o inválido; `500`: error interno. |
+| `POST` | `/auth/login` | Verifica las credenciales y devuelve un JWT. | No aplica | JSON con `email` y `password` | `200`: `token`; `401`: credenciales incorrectas. |
 
-### Ejemplo de uso con **curl**
+### Autenticación
+
+Para obtener un token, envía las credenciales a `/auth/login`. El usuario configurado actualmente para desarrollo es `admin@gmail.com` con contraseña `123456`. Incluye el token en las rutas protegidas con el encabezado:
+
+```http
+Authorization: Bearer <token>
+```
+
+## Ejemplos con curl
 
 ```bash
 # Obtener todos los productos
-curl -X GET http://localhost:3000/api/products
+curl http://localhost:3000/api/products
 
-# Obtener productos de la categoría "electronics"
-curl -X GET "http://localhost:3000/api/products?category=electronics"
+# Filtrar productos por categoría
+curl "http://localhost:3000/api/products?category=electronics"
 
 # Obtener un producto por ID
-curl -X GET http://localhost:3000/api/products/abc123
+curl http://localhost:3000/api/products/abc123
 
-# Crear un nuevo producto
+# Iniciar sesión y obtener un token
 curl -X POST \
   -H "Content-Type: application/json" \
+  -d '{"email":"admin@gmail.com","password":"123456"}' \
+  http://localhost:3000/auth/login
+
+# Crear un producto (reemplaza <token> por el JWT obtenido)
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
   -d '{"category":"electronics","name":"Smartphone","stock":10,"price":499.99}' \
   http://localhost:3000/api/products/create
+
+# Eliminar un producto (requiere token)
+curl -X DELETE \
+  -H "Authorization: Bearer <token>" \
+  http://localhost:3000/api/products/abc123
 ```
 
-### Ejemplo con **fetch** (JavaScript)
+### Ejemplo con fetch (JavaScript)
 
 ```js
-// Obtener productos
-fetch("http://localhost:3000/api/products")
-  .then((r) => r.json())
-  .then(console.log);
-
-// Crear producto
-fetch("http://localhost:3000/api/products/create", {
+// Iniciar sesión
+const loginResponse = await fetch("http://localhost:3000/auth/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email: "admin@gmail.com", password: "123456" }),
+});
+const { token } = await loginResponse.json();
+
+// Consultar productos
+const productsResponse = await fetch("http://localhost:3000/api/products");
+console.log(await productsResponse.json());
+
+// Crear producto
+const createResponse = await fetch("http://localhost:3000/api/products/create", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
   body: JSON.stringify({
     category: "electronics",
     name: "Laptop",
     stock: 5,
     price: 999.99,
   }),
-})
-  .then((r) => r.json())
-  .then(console.log);
+});
+console.log(await createResponse.json());
+
+// Eliminar producto
+const deleteResponse = await fetch("http://localhost:3000/api/products/abc123", {
+  method: "DELETE",
+  headers: { Authorization: `Bearer ${token}` },
+});
+console.log(await deleteResponse.json());
 ```
 
-## Requisitos de la solicitud
+## Requisitos del cuerpo para crear un producto
 
-Para crear un producto, el cuerpo de la petición debe contener:
-
-| Campo      | Tipo   | Requerido |
-| ---------- | ------ | --------- |
-| `category` | string | Sí        |
-| `name`     | string | Sí        |
-| `stock`    | number | Sí        |
-| `price`    | number | Sí        |
+| Campo | Tipo | Requerido |
+| --- | --- | --- |
+| `category` | `string` | Sí |
+| `name` | `string` | Sí |
+| `stock` | `number` | Sí |
+| `price` | `number` | Sí |
 
 ## Instalación y ejecución
 
@@ -76,15 +112,16 @@ cd nodejs-proyecto-final
 npm install
 
 # Configurar variables de entorno
-# Copie .env.example a .env y rellene los valores
+# Copia .env.example a .env y completa los valores
 cp .env.example .env
 
 # Iniciar el servidor
 npm run dev
 ```
 
-La API se ejecutará en `http://localhost:3000`.
+El servidor escucha en `http://localhost:3000`.
 
 ## Notas
 
-- Los datos se almacenan en Firebase Firestore. Asegúrese de que las credenciales de Firebase estén configuradas correctamente en las variables de entorno.
+- Configura las credenciales de Firebase y `JWT_SECRET_KEY` en las variables de entorno.
+- Las rutas `POST /api/products/create` y `DELETE /api/products/:id` requieren un JWT válido.
